@@ -1,5 +1,8 @@
-# ReduzirDimensionalidade
-Redução de dimensionalidade com Feature Selections. Aplicando projeção com o PCA e objetivando comparar os resultados com o MCEPCA.
+# Reduce dimension
+Reduction of dimensionality using Feature Selections. Applying projection with the PCA, targeting to compare the results aside MCEPCA.
+
+### Do this before
+Run the venv environment with ```venv/Scripts/activate```.
 
 #### Os principais pacotes instalados foram nessas versões. A versão do Python usada foi a 3.8. Versões diferentes das bibliotecas ou do Python podem não funcionar
 * versão do Python: 3.8.6, https://www.python.org/downloads/release/python-386/
@@ -10,4 +13,6 @@ Redução de dimensionalidade com Feature Selections. Aplicando projeção com o
 * pip install tqdm==4.54.0
 * pip install mlxtend==0.18.0
 * pip install skfeature-chappers==1.0.3
-* spip install xlrd==2.0.1
+* pip install xlrd==2.0.1
+
+Or just run ```pip install -r requirements.txt``` to install all required packages.
