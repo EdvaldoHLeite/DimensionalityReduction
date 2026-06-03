@@ -4,7 +4,7 @@ Reduction of dimensionality using Feature Selections. Applying projection with t
 ### Do this before
 Run the venv environment with ```venv/Scripts/activate```.
 
-#### Os principais pacotes instalados foram nessas versões. A versão do Python usada foi a 3.8. Versões diferentes das bibliotecas ou do Python podem não funcionar
+#### The main installed packages were the following versions. The Python`s version for this is the 3.8. Versions with differences from the installed libs or Python could not work properly
 * versão do Python: 3.8.6, https://www.python.org/downloads/release/python-386/
 * pip install pandas==1.1.4
 * pip install scipy==1.5.4
@@ -15,4 +15,4 @@ Run the venv environment with ```venv/Scripts/activate```.
 * pip install skfeature-chappers==1.0.3
 * pip install xlrd==2.0.1
 
-Or just run ```pip install -r requirements.txt``` to install all required packages.
+Obs.: Or just run ```pip install -r requirements.txt``` to install all required packages.
