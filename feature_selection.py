@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from numpy import linalg as eigen # autovetores e autovalores
+from numpy import linalg as eigen # eigen vectors and eigen values
 from tqdm import tqdm
 
 from sklearn.feature_selection import mutual_info_classif
@@ -274,11 +274,3 @@ def MCEPCA(W, X, k, classes, Y, autovalores, autovetores):
     ordenado = np.argsort(score)[::-1] # vetor com os indices de score ordenados
     Sk = autovetores[:, ordenado[:k]] # seleciona as k colunas
     return Sk
-
-
-
-
-
-
-        
-    

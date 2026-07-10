@@ -31,6 +31,7 @@ def project_datasets(bases, nomes_reducao, numero_repeticoes):
         y = bases[indice][1]
         nome_base = bases[indice][2]
         nomes_colunas = bases[indice][3]
+        # print("Dataset", len(bases[indice]))
         
         # divisão das n iteracoes, para serem salvas depois
         # Todos os testes, iteracoes, classificadores e metodos devem usar a mesma divisao de treino e teste, ao menos para cada base
@@ -46,12 +47,15 @@ def project_datasets(bases, nomes_reducao, numero_repeticoes):
             X_indices = np.arange(len(X))
             for iteracao in range(numero_repeticoes):
                 # uso nos indices das linhas não nos dados
-                treino_x, teste_x, treino_y, teste_y = train_test_split(X_indices, y, test_size=0.5, stratify=y)
+                try:
+                    treino_x, teste_x, treino_y, teste_y = train_test_split(X_indices, y, train_size=0.5, test_size=0.5, stratify=y)
+                except ValueError:
+                    print("This is related with the sample size, adjust later")
                 df_treino_indices[str(iteracao+1)] = treino_x
                 df_teste_indices[str(iteracao+1)] = teste_x
             
-            df_treino_indices = pd.DataFrame(df_treino_indices)
-            df_teste_indices = pd.DataFrame(df_teste_indices) 
+            df_treino_indices = pd.DataFrame(df_treino_indices, columns=["index", "value"])
+            df_teste_indices = pd.DataFrame(df_teste_indices, columns=["index", "value"]) 
             df_treino_indices.to_csv(pasta_indices+"/treino-"+str(numero_repeticoes)+".csv")
             df_teste_indices.to_csv(pasta_indices+"/teste-"+str(numero_repeticoes)+".csv")
         

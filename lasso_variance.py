@@ -1,5 +1,5 @@
-from carregar_bases import obs_network, letter, user_knowledge, mice, wine_quality_red, wine_quality_white, waveform
-from carregar_bases import banknote, climate, debrecen, occupancy, pima, vcolumn, wdbc, spambase
+from load_datasets import obs_network, letter, user_knowledge, mice, wine_quality_red, wine_quality_white, waveform
+from load_datasets import banknote, climate, debrecen, occupancy, pima, vcolumn, wdbc, spambase
 import pandas as pd
 
 

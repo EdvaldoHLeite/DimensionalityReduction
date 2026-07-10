@@ -8,8 +8,11 @@ import pandas as pd
 import os
 
 def criar_pasta(nome):
-    if not os.path.isdir(nome):
-        os.mkdir(nome)
+    try:
+        if not os.path.isdir(nome):
+            os.mkdir(nome)
+    except FileNotFoundError:
+        print("Skiping for while")
 
 # vetor com resultado de cada feature
 def treino_teste(classificador, treino_projetado, teste_projetado, treino_y, teste_y):

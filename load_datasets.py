@@ -1,13 +1,13 @@
 import pandas as pd
 import numpy as np
 from scipy.io import arff
-########################################### Duas classes ##########################################
 
 
+########################################### two classes ##########################################
 
-#############################################3
+#############################################
 ###################     ERROR       #################
-# header deve ser None, se nao ele pega a primeira linha e diz ser o cabecalho
+# header must be None on pd.read_csv, otherwise it will get the first line and use as the hearder
 ##########################3
 
 
@@ -15,10 +15,10 @@ def pima():
     df = pd.read_csv('bases/pima/pima-indians-diabetes.csv', sep=',')
     df.columns = ['a'+str(x) for x in range(8)] + ['Class']
     
-    # possui os dados
+    # datas
     x = np.array(df.drop('Class',1))
 
-    # possui as classes
+    # classes
     y = np.array(df.Class)
 
     return [x, y, 'Pima', df.drop('Class',1).columns]
@@ -28,10 +28,10 @@ def banknote():
 
     df.columns = ['variance', 'skewness', 'curtosis', 'entropy', 'target']
 
-    # possui os dados
+    # datas
     x = np.array(df.drop('target',1))
 
-    # possui as classes
+    # classes
     y = np.array(df.target)
 
     return [x, y, 'Banknote', df.drop('target',1).columns]
@@ -44,7 +44,7 @@ def climate():
     df = df.drop('Run', 1)
     
     x = np.array(df.drop('outcome',1)) # axis=0 row e axis=1 columns    
-    # possui as classes
+    # classes
     y = np.array(df.outcome)
 
     # 18 features
@@ -55,7 +55,7 @@ def debrecen():
     df = pd.DataFrame(dados[0])
     
     x = np.array(df.drop('Class',1)) # axis=0 row e axis=1 columns    
-    # possui as classes
+    # classes
     y = np.array(df.Class)
     y=y.astype('int')
     return [x, y, 'Debrecen', df.drop('Class',1).columns]
@@ -65,24 +65,24 @@ def occupancy():
 
     df = df.drop('date', 1) # apaga o 'date'
 
-    # possui os dados
+    # datas
     x = np.array(df.drop('Occupancy',1))
-    # possui as classes
+    # classes
     y = np.array(df.Occupancy)
     # 5 features
     return [x, y, 'Occupancy', df.drop('Occupancy',1).columns]
     
 def vcolumn():
     df = pd.read_csv('bases/vcolumn/column_2C.dat', sep='\s+')
-    # adiciona o cabecalho
+    # add the header
     df.columns = ['dado1', 'dado2', 'dado3', 'dado4', 'dado5', 'dado6', 'Class']
     #df['date'] = df['date'].replace(lambda x: (data_to_number(x)))
     
-    # possui os dados
+    # datas
     df['Class'] = df['Class'].replace(['AB', 'NO'], [1, 0])
     x = np.array(df.drop('Class',1))
 
-    # possui as classes
+    # classes
     y = np.array(df.Class)
     # 6 features
     return [x, y, 'VColumn', df.drop('Class',1).columns]
@@ -90,7 +90,7 @@ def vcolumn():
     
 def spambase():
     df = pd.read_csv('bases/spambase/spambase.data', sep=',', header=None)
-        # adiciona o cabecalho
+        # add the header
     df.columns = ['word_freq_make', 
             'word_freq_address', 
             'word_freq_all', 
@@ -150,31 +150,31 @@ def spambase():
             'capital_run_length_total', 
             'Class']
 
-        # possui os dados
+        # datas
     x = np.array(df.drop('Class',1))
 
-        # possui as classes
+    # classes
     y = np.array(df.Class)
     # 6 features
     return [x, y, 'Spambase', df.drop('Class',1).columns]
     
 def wdbc():
     df = pd.read_csv('bases/wdbc/wdbc.data', sep=',', header=None)
-    # adiciona o cabecalho
+    # add the header
     df.columns = ['ID', 'Diagnosis', 'dado1', 'dado2', 'dado3', 'dado4', 'dado5', 'dado6', 'dado7', 'dado8', 'dado9', 'dado10', 'dado11', 'dado12', 'dado13', 'dado14', 'dado15', 'dado16', 'dado17', 'dado18', 'dado19', 'dado20', 'dado21', 'dado22', 'dado23', 'dado24', 'dado25', 'dado26', 'dado27', 'dado28', 'dado29', 'dado30']
     #df['date'] = df['date'].replace(lambda x: (data_to_number(x)))
     
     df['Diagnosis'] = df['Diagnosis'].replace(['M', 'B'], [1, 0])
     
-    # possui os dados
+    # datas
     x = np.array((df.drop('ID',1)).drop('Diagnosis', 1)) # o id nao interessa o diagnostico eh a classe
 
-    # possui as classes
+    # classes
     y = np.array(df.Diagnosis)
     # 6 features
     return [x, y, 'WDBC', (df.drop('ID',1)).drop('Diagnosis', 1).columns]
     
-#### bases do parzen
+#### parzen's bases
 
 def survival():
     df = pd.read_csv('bases/survival/haberman.data')
@@ -186,11 +186,11 @@ def survival():
     return [x, y, 'Survival', df.drop('Class', 1).columns]    
 
 def monks():
-    # monks-1.test possui os exemplos completos
+    # monks-1.test has the complete examples
     df = pd.read_csv('bases/monks/monks-1.test', sep='\s+') # usa o primeiro teste
     df.columns = ["Class", 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'id']
         
-    df = df.drop('id', 1) # id eh inutil entao eh removida
+    df = df.drop('id', 1) # id is unnecessary
     
     x = np.array(df.drop('Class', 1))
     y = np.array(df.Class)
@@ -198,7 +198,7 @@ def monks():
     return [x, y, 'Monks', df.drop('Class', 1).columns]
 
 def immunotherapy():
-    df = pd.read_csv('bases/Immunotherapy/Immunotherapy.txt', sep='\s+') # usa o primeiro teste
+    df = pd.read_csv('bases/Immunotherapy/Immunotherapy.txt', sep='\s+') # use the first test
     
     x = np.array(df.drop('Result_of_Treatment', 1))
     y = np.array(df.Result_of_Treatment)
@@ -207,12 +207,12 @@ def immunotherapy():
 
 def titanic():
     df = pd.read_csv('bases/Titanic/train_clean.csv', sep=',')
-    ### binarizacao de embarked
+    ### binarization of embarked
     df['Q'] = [int(x=='Q') for x in df['Embarked']]
     df['S'] = [int(x=='S') for x in df['Embarked']]
     df['C'] = [int(x=='C') for x in df['Embarked']]
 
-    ## removendo atributos
+    # removing features
     df = df.drop('Embarked', 1)
     df = df.drop('Cabin', 1)
     df = df.drop('Name', 1)
@@ -220,7 +220,7 @@ def titanic():
     df = df.drop("Ticket", 1)
     df = df.drop("Title", 1)
 
-    ## binarizando sex
+    ## # turn to binary:  sex
     df['Sex'] = df['Sex'].replace(['male', 'female'], [1, 0])
 
     x = np.array(df.drop('Survived', 1))
@@ -252,7 +252,7 @@ def hill_valley():
     
     return [x, y, 'HillValley', df_train.drop("Class", 1).columns]
 
-######################################### Mais de duas classes #############################################
+######################################### More than two classes #############################################
 
 def dermatology():
     df = pd.read_csv('bases/Dermatology/dermatology.data')
@@ -295,15 +295,15 @@ def obs_network():
     df = pd.DataFrame(dados[0])
 
     df['Class'] = df['Class'].replace([b'NB-No Block',b'Block',b'No Block',b'NB-Wait'], [0, 1, 2, 3])
-    # comportamento na rede, b: comportando-se-1, nb: nao se comportando -- -1 e talvez nao se comportando pnb:0
+    # behavior on network, b: yes-if: 1, nb: no-if: -1 e maybe no pnb:0
     df['Node Status'] = df['Node Status'].replace([b'B', b'NB', b'P NB'], [1, -1, 0])
     
-    # converte para int
+    # convert to int
     head = df.head()    
     for x in head:
         df[x] = df[x].astype(float)
     
-    # preenche os NaNs com a media
+    # NaNs with the mean
     df = df.fillna(df.mean(0))
     
     x = np.array(df.drop('Class', 1))
@@ -343,19 +343,18 @@ def mice():
     df['C/S'] = CS
     df['S/C'] = SC
     
-    # apagando binarios
+    # deleting binaries
     df = df.drop(['Treatment', 'Genotype', 'Behavior'], 1)
-    # apagando ids
+    # deleting ids
     df = df.drop('MouseID', 1)
 
     '''#deletando linhas com valores falhos
     df = df.dropna(axis=0)'''
 
-    # deletando colunas com valores falhos, para impedir que nao sejam eliminadas muitas amostras
-    # mesmo que algumas colunas sejam eliminadas
+    # deleting columns with missing values, to avoid lose many samples, even if some columns (features) are being deleted
     df = df.dropna(axis=1)
     
-    # ajustando nomes das classes
+    # adjusting classes names
     df.rename(columns={'class':"Class"}, inplace=True)
     df['Class'] = df['Class'].replace(['c-CS-m', 'c-SC-m', 'c-CS-s', 'c-SC-s', 
         't-CS-m','t-SC-m', 't-CS-s', 't-SC-s'], [0, 1, 2, 3, 4, 5, 6, 7])
@@ -371,14 +370,14 @@ def mice():
     return [x, y, 'Mice', df.drop('Class', 1).columns]
 
 def user_knowledge():
-    # uso de excel para import
+    # excel to import
     df_train = pd.read_excel('bases/UserKnowledge/Data_User_Modeling_Dataset_Hamdi Tolga KAHRAMAN.xls', sheet_name='Training_Data')
     df_test = pd.read_excel('bases/UserKnowledge/Data_User_Modeling_Dataset_Hamdi Tolga KAHRAMAN.xls', sheet_name='Test_Data')
-    # concatenando o treino e teste das duas planilhas de um unico arquivo
+    # concatenating the train and test of two sheets in only one file
     df = df_train.append(df_test, ignore_index=True)
     df.rename(columns={" UNS":"UNS"}, inplace=True)
 
-    #Deletando colunas extras ou vazias
+    # deleting empty columns
     df = df.dropna(axis=1)
     #df = df.drop('Attribute Information:', axis=1)
 
@@ -447,10 +446,10 @@ def spectf():
 def bank():
     df = pd.read_csv('bases/bank/bank-full.csv', sep=';')
 
-    # troca os atributos nao numericos
+    # changing the not numeric features
 
     # job
-    # 12 novas features, menos 1
+    # 12 new features, less 1
     df['job_admin'] = [int(x=='admin.') for x in df['job']]
     df['job_unknown'] = [int(x=='unknown') for x in df['job']]
     df['job_unemployed'] = [int(x=='unemployed') for x in df['job']]
@@ -493,7 +492,7 @@ def bank():
     df.drop('job', 1)   ''' 
 
     # marital
-    # 3 novas
+    # 3 new
     df['marital_married'] = [int(x=='married') for x in df['marital']]
     df['marital_divorced'] = [int(x=='divorced') for x in df['marital']]
     df['marital_single'] = [int(x=='single') for x in df['marital']]
@@ -509,7 +508,7 @@ def bank():
     df = df.drop('marital', 1)'''
     
     # education
-    # 4 novas
+    # 4 new
     df['education_unknown'] = [int(x=='unknown') for x in df['education']]
     df['education_secondary'] = [int(x=='secondary') for x in df['education']]
     df['education_primary'] = [int(x=='primary') for x in df['education']]
@@ -537,14 +536,14 @@ def bank():
     df['loan'] = df['loan'].replace(["yes","no"], [1, 0])
 
     # contact
-    # 3 novas
+    # 3 new
     df['contact_unknown'] = [int(x=='unknown') for x in df['contact']]
     df['contact_telephone'] = [int(x=='telephone') for x in df['contact']]
     df['contact_cellular'] = [int(x=='cellular') for x in df['contact']]
     df = df.drop('contact', 1)
 
     #poutcome
-    # 4 novas
+    # 4 new
     df['poutcome_unknown'] = [int(x=='unknown') for x in df['poutcome']]
     df['poutcome_other'] = [int(x=='other') for x in df['poutcome']]
     df['poutcome_failure'] = [int(x=='failure') for x in df['poutcome']]
@@ -565,7 +564,7 @@ def bank():
     #df['poutcome'] = df['poutcome'].replace(['failure','unknown','other','success'], [0,1,2,3])
 
     # month
-    # 12 novas
+    # 12 new
     df['month_jan'] = [int(x=='jan') for x in df['month']]
     df['month_fev'] = [int(x=='feb') for x in df['month']]
     df['month_mar'] = [int(x=='mar') for x in df['month']]
@@ -611,9 +610,9 @@ def bank():
     df = df.drop('month', 1)'''
     df['y'] = df['y'].replace(['yes', 'no'], [1, 0])
 
-    # possui os dados
+    # datas
     x = np.array(df.drop('y',1)) # axis=0 row e axis=1 columns
-    # possui as classes
+    # classes
     y = np.array(df.y)
 
     return [x, y, 'Bank']
@@ -623,7 +622,7 @@ def dorothea():
 
 
 def waveform():
-    # nao eh necessario colocar as colunas, estao sendo setadas com numeros, como ocorre com as ids
+    # it is unnecessary to put columns, then will be zeros, as the ids
     df = pd.read_csv('bases/waveform/waveform-+noise.data', sep=',', header=None)
 
     df.columns = [str(x) for x in range(40)] + ["Class"]

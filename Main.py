@@ -1,14 +1,14 @@
-from carregar_bases import obs_network, letter, user_knowledge, mice, wine_quality_red, wine_quality_white, waveform
-from carregar_bases import banknote, climate, debrecen, occupancy, pima, vcolumn, wdbc, spambase
-from Projecao import projetar_bases
+from load_datasets import obs_network, letter, user_knowledge, mice, wine_quality_red, wine_quality_white, waveform
+from load_datasets import banknote, climate, debrecen, occupancy, pima, vcolumn, wdbc, spambase
+from projection import project_datasets
 import warnings
 
-from PlotarGraficos import info_gain_grafico, fisher_score_grafico, graficos
+# from plot_graphs import info_gain_graph, fisher_score_graph, graphs
 
 warnings.filterwarnings("ignore")
 
 def main():
-    bases3 = [
+    datasets1 = [
         #obs_network(),
         letter(),
         user_knowledge(),
@@ -18,7 +18,7 @@ def main():
         waveform()
     ]
     
-    bases2 = [
+    '''datasets2 = [
         banknote(),
         climate(),
         debrecen(),
@@ -26,15 +26,18 @@ def main():
         pima(),
         vcolumn(),
         wdbc(),
-        #spambase() Executar depois
+        #spambase() execute a later run
+    ]'''
+    datasets2 = [
+        climate()
     ]
     
-    repeticoes = 100
+    repetition = 2
 
-    ### coeficiente de correlacao nao esta constando nos testes anteriores
-    #nomes_reducao = ['RFE']
-    nomes_reducao = ['MCEPCA',
-                    #'PCA',
+    ### correlation` coeficient is not in that previous tests (?)
+    #reduction_names = ['RFE']
+    reduction_names = [#'MCEPCA',
+                    'PCA',
                      #'chi2_square',
                      #'LASSO',
                      #'fishers_score',
@@ -43,7 +46,10 @@ def main():
                      #'RFE',
                      #'variance_threshold'
                      ]
-    projetar_bases([*bases2], nomes_reducao, repeticoes)
+
+    print("Dataset", len(datasets2))
+    
+    project_datasets(datasets2, reduction_names, repetition)
 
 
 
