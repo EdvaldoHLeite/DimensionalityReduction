@@ -1,0 +1,22 @@
+,0
+Node,0
+Utilised Bandwith Rate,18
+Packet Drop Rate,10
+Full_Bandwidth,9
+Average_Delay_Time_Per_Sec,12
+Percentage_Of_Lost_Pcaket_Rate,8
+Percentage_Of_Lost_Byte_Rate,16
+Packet Received  Rate,20
+of Used_Bandwidth,11
+Lost_Bandwidth,19
+Packet Size_Byte,17
+Packet_Transmitted,15
+Packet_Received,1
+Packet_lost,2
+Transmitted_Byte,13
+Received_Byte,7
+10-Run-AVG-Drop-Rate,14
+10-Run-AVG-Bandwith-Use,4
+10-Run-Delay,5
+Node Status,6
+Flood Status,3
