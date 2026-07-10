@@ -1,276 +1,295 @@
 import numpy as np
 import pandas as pd
-from numpy import linalg as eigen # eigen vectors and eigen values
+from mlxtend.feature_selection import SequentialFeatureSelector
+from numpy import linalg as eigen  # eigenvectors and eigenvalues
+from skfeature.function.similarity_based import fisher_score
+from sklearn.feature_selection import (  # chi square
+    RFE,
+    SelectFromModel,
+    SelectKBest,
+    VarianceThreshold,
+    chi2,
+    mutual_info_classif,
+)
+from sklearn.linear_model import Lasso, LinearRegression, LogisticRegression
+from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
-from sklearn.feature_selection import mutual_info_classif
-from sklearn.feature_selection import chi2, SelectKBest # chi square
-from skfeature.function.similarity_based import fisher_score
-from sklearn.feature_selection import RFE
-from mlxtend.feature_selection import SequentialFeatureSelector
-from sklearn.feature_selection import VarianceThreshold
-from sklearn.feature_selection import SelectFromModel
 
-from sklearn.linear_model import LinearRegression, LogisticRegression, Lasso
-from sklearn.preprocessing import StandardScaler
+def PCA(X):  # returns centered matrix and covariance
+    matrix_mean = X.mean(axis=0)
 
-def PCA(X): # retorna matriz centralizada e covariancia
-    media_matriz = X.mean(axis=0)
+    X = X - matrix_mean
+    XT = X.T  # X.transpose() # transpose of X or X.T
 
-    X = X - media_matriz 
-    XT = X.T #X.transpose() # transposta de X ou X.T
+    covariance = XT @ X  # np.dot(XT, X) # X.T @ X
+    covariance = covariance / len(X)
+    eig_val, eig_vet = eigen.eig(covariance)  # (np.float(_) for _ in )
 
-    covariancia = XT @ X #np.dot(XT, X) # X.T @ X
-    covariancia = covariancia/len(X) 
-    aut_val, aut_vet = eigen.eig(covariancia) # (np.float(_) for _ in )
+    # converting result from complex to real
+    eig_val = np.real(eig_val)
+    eig_vet = np.real(eig_vet)
 
-    # convertendo resultado de complexo para real
-    aut_val = np.real(aut_val)
-    aut_vet = np.real(aut_vet)
-
-    #aut_val, aut_vet = eigen.eig(covariancia.T) # uma matriz e sua transposta tem os mesmos autovetores
-    # os autovetores são as colunas
-    save = str(aut_val)
-    #ordenado = np.argsort(aut_val)[::-1]
-    save2 = str(aut_val)
+    # aut_val, aut_vet = eigen.eig(covariancia.T) # a matrix and its transpose have the same eigenvectors
+    # the eigenvectors are the columns
+    save = str(eig_val)
+    # ordenado = np.argsort(aut_val)[::-1]
+    save2 = str(eig_val)
     if save != save2:
-        print("Opa os autovetores foram modificados durante o PCA, não podem ser usados no MCEPCA")
-    
-    '''Ed = aut_vet[:, ordenado[:d]]
-    aut_vet = Ed
-    aut_val = aut_val[ordenado[:d]]'''
-    #return Ed, aut_val, aut_vet
+        print(
+            "Whoops, the eigenvectors were modified during PCA, they cannot be used in MCEPCA"
+        )
 
-    return aut_vet, aut_val
+    """Ed = aut_vet[:, ordenado[:d]]
+    aut_vet = Ed
+    aut_val = aut_val[ordenado[:d]]"""
+    # return Ed, aut_val, aut_vet
+
+    return eig_vet, eig_val
+
 
 def info_gain(X, y, dataframe_columns):
-    # valor mutual entre as features
+    # mutual value between features
     importances = mutual_info_classif(X, y)
-    feat_importances = pd.Series(importances, dataframe_columns) # ganho de informação
-    
-    # indices features ordenados pelo maior ganho de informação
-    ordenado = np.argsort(feat_importances)[::-1]
-    return list(ordenado), feat_importances
+    feat_importances = pd.Series(importances, dataframe_columns)  # information gain
+
+    # feature indices sorted by highest information gain
+    sorted = np.argsort(feat_importances)[::-1]
+    return list(sorted), feat_importances
+
 
 def fishers_score(X, y, dataframe_columns):
     ranks = fisher_score.fisher_score(X, y)
     feat_importances = pd.Series(ranks, dataframe_columns)
-    ordenado = np.argsort(feat_importances[::-1]) # ordenado em ordem decrescente
-    return list(ordenado), feat_importances
+    sorted = np.argsort(feat_importances[::-1])  # sorted in descending order
+    return list(sorted), feat_importances
 
-# escolhe as features por menor soma de coefientes
+
+# selects features by lowest sum of coefficients
 def correlation_coefficient(data_frame):
-    '''correlacao = data_frame.corr()
+    """correlacao = data_frame.corr()
     a=abs(correlacao[target])
-    result=a[a<threshold]    
-    return list(result.index)'''
-    
-    correlacao = data_frame.corr() # matriz de correlacoes
-    somas_corr = [] # somas das correlacoes para cada feature
-    for c in correlacao.columns:
-        somas_corr.append(correlacao[c].sum())
-        
-    somas_corr = np.array(somas_corr)
-    ordem = np.argsort(somas_corr)
-    
-    return list(ordem)
+    result=a[a<threshold]
+    return list(result.index)"""
 
-# variacao selecionando o melhor grupo para cada quantidade de features
-def correlation_coefficient_2(data_frame):    
-    correlacao = data_frame.corr() # matriz de correlacoes
-    
-    # combinacoes para cada k quantidade de features    
-    grupos_indices = []
-    # inicia com o maior valor possivel de somas de coeficientes
-    menor_soma = (1.0)*len(correlacao)
-    # para cada quantidade de features
-    for k in range(len(correlacao)):
-        # para cada feature como target, um grupo diferente
-        melhor_grupo = []
-        for ind_feat in range(len(correlacao)):
-            ind_menores = np.argsort(correlacao[ind_feat])[k+1]
-            soma = ind_menores.sum()
-            
-            if soma < menor_soma:
-                menor_soma = soma
-                melhor_grupo = ind_menores
-            
-        grupos_indices.append(melhor_grupo)
-        
-    return grupos_indices
+    correlation = data_frame.corr()  # correlation matrix
+    corr_sum = []  # sums of correlations for each feature
+    for c in correlation.columns:
+        corr_sum.append(correlation[c].sum())
 
-def selecionar_indices_chi2(chi2_features):
-    # selecionando os indices que são proeminentes
-    indices = []
-    indices_bool = chi2_features.get_support()
-    for i in range(len(indices_bool)):
-        if indices_bool[i]:
-            indices.append(i)
-    return indices
+    corr_sum = np.array(corr_sum)
+    order = np.argsort(corr_sum)
+
+    return list(order)
+
+
+# variation selecting the best group for each quantity of features
+def correlation_coefficient_2(data_frame):
+    correlation = data_frame.corr()  # correlation matrix
+
+    # combinations for each k quantity of features
+    index_groups = []
+    # starts with the highest possible value of coefficient sums
+    minor_sum = (1.0) * len(correlation)
+    # for each quantity of features
+    for k in range(len(correlation)):
+        # for each feature as target, a different group
+        best_group = []
+        for ind_feat in range(len(correlation)):
+            minor_indexes = np.argsort(correlation[ind_feat])[k + 1]
+            sum = minor_indexes.sum()
+
+            if sum < minor_sum:
+                minor_sum = sum
+                best_group = minor_indexes
+
+        index_groups.append(best_group)
+
+    return index_groups
+
+
+def select_indexes_chi2(chi2_features):
+    # selecting prominent indices
+    indexes = []
+    indexes_bool = chi2_features.get_support()
+    for i in range(len(indexes_bool)):
+        if indexes_bool[i]:
+            indexes.append(i)
+    return indexes
+
+
 def chi2_square(X, y, k):
-    # passando para categorico, tratando casos negativos
-    X_cat = X.astype('int')
-    X_cat_pos = np.arange(len(X_cat)*len(X_cat[0])).reshape(len(X_cat), len(X_cat[0]))
-    unicos = np.unique(X_cat) # diferentes valores inteiros
-    for unico_ind in range(len(unicos)):
-        unico = unicos[unico_ind]
-        X_cat_pos[X_cat==unico] = unico_ind + 1
-    
-    ordem = [] # indices ordenados
-    for ki in range(k): # a medida que ki aumenta surge um novo indice
-        chi2_features = SelectKBest(chi2, k=ki+1)
+    # converting to categorical, handling negative cases
+    X_cat = X.astype("int")
+    X_cat_pos = np.arange(len(X_cat) * len(X_cat[0])).reshape(len(X_cat), len(X_cat[0]))
+    uniques = np.unique(X_cat)  # different integer values
+    for unique_ind in range(len(uniques)):
+        unique = uniques[unique_ind]
+        X_cat_pos[X_cat == unique] = unique_ind + 1
+
+    order = []  # sorted indices
+    for ki in range(k):  # as ki increases, a new index emerges
+        chi2_features = SelectKBest(chi2, k=ki + 1)
         X_kbest_features = chi2_features.fit_transform(X_cat_pos, y)
-        
-        # selecionando os indices que são proeminentes
-        indices = selecionar_indices_chi2(chi2_features)   
-        # adiciona o novo indice aos indices ordenados
-        #print(len(np.setdiff1d(ordem, indices)))
-        #ordem.append(np.setdiff1d(ordem, indices))
-        for indice in indices:
-            if indice not in ordem:
-                ordem.append(indice)
+
+        # selecting prominent indices
+        indexes = select_indexes_chi2(chi2_features)
+        # adds the new index to the sorted indices list
+        # print(len(np.setdiff1d(ordem, indices)))
+        # ordem.append(np.setdiff1d(ordem, indices))
+        for index in indexes:
+            if index not in order:
+                order.append(index)
                 break
 
-    return ordem
+    return order
+
 
 def forward_linear_regression(X, y):
-    #dataset = pd.DataFrame(data=y, columns=['target'])
-    
-    #### passando o y para numerico
-    '''f=0 # numero de um target
+    # dataset = pd.DataFrame(data=y, columns=['target'])
+
+    #### converting y to numeric
+    """f=0 # number of a target
     valores = y.unique()
     for val in valores:
         f=f+1
-        # substitui cada target por um numero
-        dataset['target'].replace([feature], [f])'''
-    # diferentes valores de y
-    '''valores = np.unique(y)
-    # troca um target por um numero
+        # replaces each target with a number
+        dataset['target'].replace([feature], [f])"""
+    # different values of y
+    """valores = np.unique(y)
+    # exchanges a target for a number
     dataset['target'].replace(list(valores), list(np.arange(len(valores))))
-    y = np.array(dataset['target'])'''
-    
+    y = np.array(dataset['target'])"""
+
     lr = LinearRegression()
-    
-    ordem = [] 
-    # encontra as features para cada quantidade 
-    # adicionando em seguida na lista ordenada, as primeiras que aparecem
+
+    order = []
+    # finds features for each quantity
+    # then appending them to the sorted list, the first ones that appear
     for k in range(len(X[0])):
-        ffs = SequentialFeatureSelector(estimator=lr, k_features=k+1)
+        ffs = SequentialFeatureSelector(estimator=lr, k_features=k + 1)
         ffs.fit(X, y)
-        indices = ffs.k_feature_idx_ #list(np.where(rfe.support_ == True)[0])
-        # verifica se o indice nao existe na lista ordenada
-        for indice in indices:
-            if indice not in ordem:
-                ordem.append(indice)
+        indexes = ffs.k_feature_idx_  # list(np.where(rfe.support_ == True)[0])
+        # checks if the index does not exist in the sorted list
+        for index in indexes:
+            if index not in order:
+                order.append(index)
                 break
-        
-    return ordem
+
+    return order
+
 
 def RFE_linear_regression(X, y):
-    dataset = pd.DataFrame(data=y, columns=['target'])
-    
-    #### passando o y para numerico
-    '''f=0 # numero de um target
+    dataset = pd.DataFrame(data=y, columns=["target"])
+
+    #### converting y to numeric
+    """f=0 # number of a target
     valores = y.unique()
     for val in valores:
         f=f+1
-        # substitui cada target por um numero
-        dataset['target'].replace([feature], [f])'''
-    # diferentes valores de y
+        # replaces each target with a number
+        dataset['target'].replace([feature], [f])"""
+    # different values of y
     valores = np.unique(y)
-    # troca um target por um numero
-    dataset['target'].replace(list(valores), list(np.arange(len(valores))))
-    y = np.array(dataset['target'])
-    
+    # exchanges a target for a number
+    dataset["target"].replace(list(valores), list(np.arange(len(valores))))
+    y = np.array(dataset["target"])
+
     lr = LinearRegression()
-    
-    ordem = [] 
-    # encontra as features para cada quantidade 
-    # adicionando em seguida na lista ordenada, as primeiras que aparecem
+
+    order = []
+    # finds features for each quantity
+    # then appending them to the sorted list, the first ones that appear
     for k in range(len(X[0])):
-        rfe = RFE(estimator=lr, n_features_to_select=k+1, step=1)
-        #print("Y no RFE", y)
+        rfe = RFE(estimator=lr, n_features_to_select=k + 1, step=1)
+        # print("Y in RFE", y)
         rfe.fit(X, y)
-        indices = list(np.where(rfe.support_ == True)[0])
-        # verifica se o indice nao existe na lista ordenada
-        for indice in indices:
-            if indice not in ordem:
-                ordem.append(indice)
+        indexes = list(np.where(rfe.support_ == True)[0])
+        # checks if the index does not exist in the sorted list
+        for index in indexes:
+            if index not in order:
+                order.append(index)
                 break
-        
-    return ordem
+
+    return order
+
 
 def variance_threshold(X, limiar):
-    # limiar sendo 0: a variancia das features devem ser diferente de zero
+    # threshold being 0: the variance of features must be different from zero
     select_feature = VarianceThreshold(threshold=limiar)
-    
-    # quando não encontra variancia do limiar passado
+
+    # when it does not find variance for the passed threshold
     try:
         select_feature.fit(X)
     except ValueError:
-        return variance_threshold(X, limiar-0.1)
-    
-    # array com os indices das features selecionadas
+        return variance_threshold(X, limiar - 0.1)
+
+    # array containing indices of the selected features
     features = []
-    # array com True se a variancia for diferente
-    variancia_diferente = select_feature.get_support()
-    #print(select_feature.variances_)
-    
+    # array containing True if the variance is different
+    different_variance = select_feature.get_support()
+    # print(select_feature.variances_)
+
     for i in range(len(X[0])):
-        if variancia_diferente[i]:
+        if different_variance[i]:
             features.append(i)
-            
+
     return features
-            
+
+
 def LASSO(X, y):
-    logistic = LogisticRegression(C=1, penalty='l1', solver='liblinear', random_state=7).fit(X,y)
-    model=SelectFromModel(logistic, prefit=True)
-    
-    # array com os indices das features selecionadas
+    logistic = LogisticRegression(
+        C=1, penalty="l1", solver="liblinear", random_state=7
+    ).fit(X, y)
+    model = SelectFromModel(logistic, prefit=True)
+
+    # array containing indices of the selected features
     features = []
-    # array com True se a variancia for diferente
-    variancia_diferente = model.get_support()
+    # array containing True if the variance is different
+    different_variance = model.get_support()
 
-
-    #model2 = make_pipeline(StandardScaler(), Lasso(alpha=.015))
-    '''model2 = Lasso(alpha=1)
+    # model2 = make_pipeline(StandardScaler(), Lasso(alpha=.015))
+    """model2 = Lasso(alpha=1)
     model2.fit(X, y)
     a = abs(np.array([x for x in model2.coef_]))
     
     order_features = a.argsort()[(-1)*len(a):][::-1]
-    return order_features'''
+    return order_features"""
 
-    #print(variancia_diferente)
-    #print(np.std(X, 0) * logistic.coef_)
+    # print(variancia_diferente)
+    # print(np.std(X, 0) * logistic.coef_)
     for i in range(len(X[0])):
-        if variancia_diferente[i]:
+        if different_variance[i]:
             features.append(i)
-            
+
     return features
+
 
 def MCEPCA(W, X, k, classes, Y, autovalores, autovetores):
     n = len(X)
     d = len(X[0])
-         
-    # media das features
+
+    # mean of features
     W_mean = [[0 for x in range(d)] for y in range(2)]
-    for c in range(2): # classes
-        for i in range(d): # features
-            numerador = 0
-            denominador = 0
-            for j in range(n): # pontos
-                numerador += W[j][i] * int(Y[j] == classes[c])  # wji eh o transposto de wij
-                denominador += int(Y[j] == classes[c])
-            W_mean[c][i] = numerador/denominador        
-    
-    # score das features
+    for c in range(2):  # classes
+        for i in range(d):  # features
+            numerator = 0
+            denominator = 0
+            for j in range(n):  # points
+                numerator += W[j][i] * int(
+                    Y[j] == classes[c]
+                )  # wji is the transpose of wij
+                denominator += int(Y[j] == classes[c])
+            W_mean[c][i] = numerator / denominator
+
+    # score of features
     score = []
     for i in range(d):
         if autovalores[i] != 0:
-            score.append((W_mean[0][i] - W_mean[1][i])**2/autovalores[i])
+            score.append((W_mean[0][i] - W_mean[1][i]) ** 2 / autovalores[i])
         else:
             score.append(0)
 
-    ordenado = np.argsort(score)[::-1] # vetor com os indices de score ordenados
-    Sk = autovetores[:, ordenado[:k]] # seleciona as k colunas
+    sorted = np.argsort(score)[::-1]  # vector containing sorted score indices
+    Sk = autovetores[:, sorted[:k]]  # selects the k columns
     return Sk

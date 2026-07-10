@@ -1,9 +1,24 @@
-from load_datasets import obs_network, letter, user_knowledge, mice, wine_quality_red, wine_quality_white, waveform
-from load_datasets import banknote, climate, debrecen, occupancy, pima, vcolumn, wdbc, spambase
 import pandas as pd
 
+from load_datasets import (
+    banknote,
+    climate,
+    debrecen,
+    letter,
+    mice,
+    obs_network,
+    occupancy,
+    pima,
+    spambase,
+    user_knowledge,
+    vcolumn,
+    waveform,
+    wdbc,
+    wine_quality_red,
+    wine_quality_white,
+)
 
-opt=3
+opt = 3
 
 bases3 = [
     letter()[2],
@@ -13,7 +28,7 @@ bases3 = [
     wine_quality_white()[2],
     waveform()[2],
 ]
-reducoes3 = ['PCA', 'LASSO', 'variance_threshold']
+reductions3 = ["PCA", "LASSO", "variance_threshold"]
 
 bases2 = [
     banknote()[2],
@@ -24,30 +39,24 @@ bases2 = [
     vcolumn()[2],
     wdbc()[2],
 ]
-reducoes2 = ['MCEPCA', 'LASSO', 'variance_threshold']
+reductions2 = ["MCEPCA", "LASSO", "variance_threshold"]
 
 bases = None
-reducoes = None
-classificadores = ["tree", 'knn','gnb','lda']
-if (opt==2):    
+reductions = None
+classifiers = ["tree", "knn", "gnb", "lda"]
+if opt == 2:
     bases = bases2
-    reducoes = reducoes2
+    reductions = reductions2
 else:
     bases = bases3
-    reducoes = reducoes3
+    reductions = reductions3
 
-reducoes.reverse()
+reductions.reverse()
 for b in bases:
-    for r in reducoes:
-        nome_arquivo = "resultados/repeticoes-100/" + b + "/" + r + ".txt" 
-        f = pd.read_csv(nome_arquivo, sep=",")
+    for r in reductions:
+        file_name = "resultados/repeticoes-100/" + b + "/" + r + ".txt"
+        f = pd.read_csv(file_name, sep=",")
 
         print(b, r)
-        print(f[classificadores].mean())
-        print('\n')
-
-
-            
-            
-                
-            
+        print(f[classifiers].mean())
+        print("\n")

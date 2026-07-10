@@ -1,125 +1,153 @@
-# executa o treinamento e a acuracia dos classificadores, para cada feature. Salva os resultados em txt
+# executes classifier training and tracks accuracy for each feature. Saves results to a .txt file
 
-
-import matplotlib.pyplot as plt 
-import numpy as np
-import pandas as pd
 
 import os
 
-def criar_pasta(nome):
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+
+def create_folder(name):
     try:
-        if not os.path.isdir(nome):
-            os.mkdir(nome)
+        if not os.path.isdir(name):
+            os.mkdir(name)
     except FileNotFoundError:
         print("Skiping for while")
 
-# vetor com resultado de cada feature
-def treino_teste(classificador, treino_projetado, teste_projetado, treino_y, teste_y):
-    resultados = []
-    for k in range(len(treino_projetado.T)): # features
-        treino = treino_projetado[:, :k+1]
-        teste = teste_projetado[:, :k+1]
-        
-        treino = treino.astype(float) # caso esteja em complexo
-        #print("X",treino.shape)
-        classificador.fit(treino, treino_y)
 
-        teste = teste.astype(float)
-        resultados.append(100*classificador.score(teste, teste_y))
+# Vector with the results of each feature
+def train_test(classifier, projected_train, projected_test, train_y, test_y):
+    results = []
+    for k in range(len(projected_train.T)):  # features
+        train = projected_train[:, : k + 1]
+        test = projected_test[:, : k + 1]
 
-    return np.array(resultados)
+        train = train.astype(float)  # complex number in case
+        # print("X",treino.shape)
+        classifier.fit(train, train_y)
 
-# Faz o teste para uma unica quantidade de features
-def treino_teste_unico(classificador, treino_projetado, teste_projetado, treino_y, teste_y):
-    treino = treino_projetado.astype(float)
-    teste = teste_projetado.astype(float)
-    
-    classificador.fit(treino, treino_y)
-    
-    return 100*classificador.score(teste, teste_y)
+        test = test.astype(float)
+        results.append(100 * classifier.score(test, test_y))
 
-# tree, knn, gnb e lda; tem os resultados de cada base e cada base tem os resultados de cada feature
-def salvar(tree, knn, gnb, lda, pastas, nome_pca, num_features):
-    
-    ## arquivos
-    caminho = ""
-    for pasta in pastas:
-        caminho = caminho + pasta + "/"
-        criar_pasta(caminho) # cria a arvore de pastas
+    return np.array(results)
 
-    arquivo = open(caminho + nome_pca + ".txt", "w")
 
-    # cabecalhos
-    resultados = "feature,tree,knn,gnb,lda\n"
-    for f in range(num_features): # percorre a quantidade de features
-        resultados += str(f+1) + ","
-        resultados += str(tree[f]) + ","
-        resultados += str(knn[f]) + ","
-        resultados += str(gnb[f]) + ","
-        resultados += str(lda[f])
-        resultados += '\n'
+# test to one feature
+def unique_train_test(classifier, projected_train, projected_test, train_y, test_y):
+    train = projected_train.astype(float)
+    test = projected_test.astype(float)
 
-    # salva no arquivo
-    arquivo.writelines(resultados)
+    classifier.fit(train, train_y)
 
-    arquivo.close()
-            
-# nomes dos quatro classificadores, a ordem eh a mesma da plotagem dos subgraficos
-def carregar(pasta, nomeBase, nomes_classificadores, nomesPCA, config): # config eh um dicionario com label, cor e marker para cada pca
-    caminho = pasta + '/' + nomeBase
-    #print(nomesPCA)
-    # valores minimo e maximo para a escala em y
+    return 100 * classifier.score(test, test_y)
+
+
+# tree, knn, gnb, and lda; holds results for each dataset, and each dataset tracks performance per feature
+def save(tree, knn, gnb, lda, folders, pca_name, feature_count):
+
+    ## files
+    path = ""
+    for folder in folders:
+        path = path + folder + "/"
+        create_folder(path)  # creates the folder tree
+
+    file = open(path + pca_name + ".txt", "w")
+
+    # headers
+    results = "feature,tree,knn,gnb,lda\n"
+    for f in range(feature_count):  # loops through the number of features
+        results += str(f + 1) + ","
+        results += str(tree[f]) + ","
+        results += str(knn[f]) + ","
+        results += str(gnb[f]) + ","
+        results += str(lda[f])
+        results += "\n"
+
+    # saves to file
+    file.writelines(results)
+
+    file.close()
+
+
+# names of the four classifiers, matching the layout order of the subplots
+def load(
+    folder, base_name, classifier_names, pca_names, config
+):  # config is a dictionary containing label, color, and marker for each pca
+    path = folder + "/" + base_name
+    # print(nomesPCA)
+    # minimum and maximum values for the y-axis scale
     ymin = 10000000
     ymax = 0
 
-    classificadores = {'tree':"Decision Tree", 'knn':"1-Nearest Neighbor", 'gnb':"Naive Bayes", 'lda':"Linear Discriminant"}
-    ax = plt.subplot(2, 2, 1, title=classificadores[nomes_classificadores[0]])
-    for i in range(len(nomes_classificadores)):
+    classifiers = {
+        "tree": "Decision Tree",
+        "knn": "1-Nearest Neighbor",
+        "gnb": "Naive Bayes",
+        "lda": "Linear Discriminant",
+    }
+    ax = plt.subplot(2, 2, 1, title=classifiers[classifier_names[0]])
+    for i in range(len(classifier_names)):
         # dados = pd.read_csv(caminho+'/'+nomes_classificadores[i]+'.txt')
-        # cria um subgrafico do classificador
-        
-        if i > 0: # plotagem na mesma escala
-            ax = plt.subplot(2, 2, i+1,
-                             title=classificadores[nomes_classificadores[i]], # nome do grafico sendo o do classificador
-                             sharex=ax,
-                             sharey=ax) 
-        
-        # plota o grafico de cada pca
-        for nome_pca in nomesPCA:
-            dados = pd.read_csv(caminho+'/'+nome_pca+'.txt')
-            plt.plot(dados['feature'], # x
-                     dados[nomes_classificadores[i]], # y
-                     label=config[nome_pca][0],
-                     color=config[nome_pca][1],
-                     marker=config[nome_pca][2])
+        # creates a subplot for the classifier
+
+        if i > 0:  # plotting on the same scale
+            ax = plt.subplot(
+                2,
+                2,
+                i + 1,
+                title=classifiers[
+                    classifier_names[i]
+                ],  # sets graph title to the classifier name
+                sharex=ax,
+                sharey=ax,
+            )
+
+        # plots the performance curve for each pca method
+        for pca_name in pca_names:
+            datas = pd.read_csv(path + "/" + pca_name + ".txt")
+            plt.plot(
+                datas["feature"],  # x
+                datas[classifier_names[i]],  # y
+                label=config[pca_name][0],
+                color=config[pca_name][1],
+                marker=config[pca_name][2],
+            )
             plt.grid(b=True)
 
-            # a escala so pode ser aplicada se no grafico nao tiver um grande numero de instancias
-            if max(dados['feature']) < 22:
-                plt.xticks(dados['feature']) # cada grafico com a mesma escala em x
+            # scale can only be explicitly ticks-formatted if the number of features is relatively small
+            if max(datas["feature"]) < 22:
+                plt.xticks(
+                    datas["feature"]
+                )  # forces identical x-axis ticks across plots
 
-            # atualizando limites da escala de y
-            if min(dados[nomes_classificadores[i]]) < ymin: 
-                ymin = min(dados[nomes_classificadores[i]])
-            if max(dados[nomes_classificadores[i]]) > ymax:
-                ymax = max(dados[nomes_classificadores[i]])
+            # updating y-axis scale boundaries
+            if min(datas[classifier_names[i]]) < ymin:
+                ymin = min(datas[classifier_names[i]])
+            if max(datas[classifier_names[i]]) > ymax:
+                ymax = max(datas[classifier_names[i]])
 
-    # escala de y
-    escala_y = range(int(ymin), int(ymax))
-    if len(escala_y) < 20:
-        plt.yticks(range(int(ymin), int(ymax)+2))
+    # y scale execution
+    y_scale = range(int(ymin), int(ymax))
+    if len(y_scale) < 20:
+        plt.yticks(range(int(ymin), int(ymax) + 2))
 
-    plt.suptitle(nomeBase, fontsize=16)
-    # posicionando a legenda
-    plt.legend(loc='upper center', bbox_to_anchor=(-0.4, -0.09),fancybox=True, shadow=True, ncol=5)
-    # full
+    plt.suptitle(base_name, fontsize=16)
+    # positioning the legend box
+    plt.legend(
+        loc="upper center",
+        bbox_to_anchor=(-0.4, -0.09),
+        fancybox=True,
+        shadow=True,
+        ncol=5,
+    )
+    # full screen handling
     full = plt.get_current_fig_manager()
     full.full_screen_toggle()
-    
+
     plt.show()
 
-    '''nomePng = nomeBase+"-"
+    """nomePng = nomeBase+"-"
     for n in nomesPCA:
         nomePng += n    
-    plt.savefig("graficos/"+nomePng+".png", bbox_inches='tight')'''
+    plt.savefig("graficos/"+nomePng+".png", bbox_inches='tight')"""
